@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="only light">
 <title>CIELO kinematic maps</title>
 <style>
 @font-face { font-family: "LM"; font-weight: 400; font-style: normal; src: url(fonts/lm-regular.woff) format("woff"); }
@@ -12,7 +13,7 @@
   --bg: #FBFAFC; --card: #FFFFFF; --ink: #2B2A33; --muted: #6E6B78; --line: #E6E2EC;
   --rose: #F2C6D3; --rose-ink: #A94F72; --peach: #F7DCC6; --blue: #CFE0F1; --blue-ink: #4C7DAB; --lav: #E4DDF2;
   --serif: "LM", "Latin Modern Roman", "CMU Serif", "Computer Modern", Georgia, serif;
-  color-scheme: light;
+  color-scheme: only light;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 17px; line-height: 1.45; }
@@ -30,7 +31,9 @@ summary { cursor: pointer; font-style: italic; color: var(--muted); }
 .who { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
 .who input[type=text] { font: 1rem var(--serif); padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; min-width: 0; flex: 1 1 200px; }
 .who label { display: flex; align-items: center; gap: 6px; }
-.map { width: 100%; aspect-ratio: 690 / 262; background-repeat: no-repeat; background-size: 100% 1000%; border-radius: 8px;
+.map, .ex img { background-color: #fff !important; }
+.ex figure { background: #fff; border-radius: 8px; padding: 6px; }
+.map { width: 100%; padding: 0; box-shadow: 0 0 0 6px #fff; aspect-ratio: 690 / 262; background-repeat: no-repeat; background-size: 100% 1000%; border-radius: 8px;
   background-color: #fff; border: 1px solid var(--line); }
 .mapbar { display: flex; justify-content: space-between; margin: 0 0 6px; color: var(--muted); font-size: .95rem; }
 .q { margin-top: 18px; }
