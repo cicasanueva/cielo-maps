@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CIELO kinematic maps</title>
+<style>
+@font-face { font-family: "LM"; font-weight: 400; font-style: normal; src: url(fonts/lm-regular.woff) format("woff"); }
+@font-face { font-family: "LM"; font-weight: 700; font-style: normal; src: url(fonts/lm-bold.woff) format("woff"); }
+@font-face { font-family: "LM"; font-weight: 400; font-style: italic; src: url(fonts/lm-italic.woff) format("woff"); }
+:root {
+  --bg: #FBFAFC; --card: #FFFFFF; --ink: #2B2A33; --muted: #6E6B78; --line: #E6E2EC;
+  --rose: #F2C6D3; --rose-ink: #A94F72; --peach: #F7DCC6; --blue: #CFE0F1; --blue-ink: #4C7DAB; --lav: #E4DDF2;
+  --serif: "LM", "Latin Modern Roman", "CMU Serif", "Computer Modern", Georgia, serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 17px; line-height: 1.45; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 28px 16px 56px; }
+h1 { font-weight: 700; font-size: 1.7rem; margin: 0 0 8px; }
+.lede { color: var(--muted); margin: 0 0 12px; }
+details, .who { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; }
+summary { cursor: pointer; font-style: italic; color: var(--muted); }
+.ex { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin-top: 12px; }
+.ex figure { margin: 0; text-align: center; }
+.ex img { width: 100%; height: auto; }
+.ex figcaption { font-size: .92rem; }
+.ex h3 { grid-column: 1 / -1; font-size: 1rem; margin: 6px 0 0; }
+.note { font-size: .92rem; color: var(--muted); margin: 10px 0 2px; }
+.who { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.who input[type=text] { font: 1rem var(--serif); padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; min-width: 0; flex: 1 1 200px; }
+.who label { display: flex; align-items: center; gap: 6px; }
+.map { width: 100%; aspect-ratio: 690 / 262; background-repeat: no-repeat; background-size: 100% 1000%; border-radius: 8px;
+  background-color: #fff; border: 1px solid var(--line); }
+.mapbar { display: flex; justify-content: space-between; margin: 0 0 6px; color: var(--muted); font-size: .95rem; }
+.q { margin-top: 18px; }
+.q p { margin: 0 0 8px; }
+.opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.opt { font: 1rem var(--serif); padding: 10px 4px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.opt[aria-pressed="true"][data-val="si"] { background: var(--rose); border-color: var(--rose-ink); }
+.opt[aria-pressed="true"][data-val="dudoso"] { background: var(--peach); border-color: #C98A5E; }
+.opt[aria-pressed="true"][data-val="no"] { background: var(--blue); border-color: var(--blue-ink); }
+.nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
+.btn { font: 1rem var(--serif); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.btn:disabled { opacity: .45; cursor: default; }
+.send { margin-top: 22px; padding: 14px 16px; border-radius: 10px; background: var(--lav); display: flex; flex-wrap: wrap; gap: 10px 16px;
+  align-items: center; justify-content: space-between; }
+.send .btn { background: var(--ink); color: #fff; border-color: var(--ink); }
+.msg.warn { color: var(--rose-ink); }
+.opt:focus-visible, .btn:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 2px; }
+.code { flex-basis: 100%; margin: 0; font-size: .92rem; color: var(--muted); }
+.code b { color: var(--ink); letter-spacing: .04em; }
+.code input { font: 1rem var(--serif); padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; width: 7.5em; text-transform: uppercase; }
+.link { font: inherit; background: none; border: 0; padding: 0; color: var(--blue-ink); cursor: pointer; text-decoration: underline; }
+.lang { text-align: right; font-size: .95rem; color: var(--muted); margin-bottom: 4px; }
+.lang button { font: inherit; background: none; border: 0; padding: 0; color: var(--blue-ink); cursor: pointer; }
+.lang button[aria-pressed="true"] { color: var(--ink); cursor: default; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lang"><button id="lang-en" aria-pressed="true">English</button> · <button id="lang-es" aria-pressed="false">Español</button></div>
+  <h1 data-i="h1">CIELO kinematic maps</h1>
+  <p class="lede" data-i="l1">These are maps of the mean stellar velocity (V, left) and velocity dispersion (σ, right) of galaxies from the CIELO cosmological simulations. Each map is a mock observation: the galaxy is placed at z = 0.03 and observed as an integral field spectroscopy survey would observe it. The maps show galaxies observed at different inclinations and with different instruments.</p>
+  <p class="lede" data-i="l2">In some galaxies, part of the stars rotate in the opposite direction to the rest. In surveys, these galaxies are often found by eye, from two off-centre peaks in σ (a 2σ galaxy) or from a change in the sign of V away from the centre. We want to measure how well this works, so we ask you to classify the maps without knowing which galaxy each one shows.</p>
+  <p class="lede" data-i="l3">Classify as many maps as you like; you do not need to finish them all. Your answers are kept in this browser until you press Send, and you can come back later and send more.</p>
+
+  <div class="who">
+    <input type="text" id="name" data-ip="name" placeholder="Your name (optional)" autocomplete="name" maxlength="60">
+    <label><input type="checkbox" id="anon"> <span data-i="anon">Send anonymously</span></label>
+    <p class="code"><span data-i="yc">Your code:</span> <b id="rid"></b>. <span data-i="ych">Your answers are linked to this code. To continue on another computer, enter it there.</span>
+      <button id="chg" class="link" data-i="chg">Enter a code</button></p>
+    <p class="code" id="chgbox" hidden><input type="text" id="newrid" maxlength="7" placeholder="ABC-DEF" autocomplete="off"> <button class="btn" id="setrid" data-i="use">Use this code</button></p>
+  </div>
+
+  <details>
+    <summary data-i="look">What to look for</summary>
+    <div class="ex">
+      <h3 data-i="h3s">2σ in the σ map</h3>
+      <figure><img src="guia/sigma_si.png" alt="Sketch: two σ peaks on either side of the centre along the major axis"><figcaption data-i="fsy"><b>yes</b>: two peaks, one on each side of the centre, along the major axis (dotted line)</figcaption></figure>
+      <figure><img src="guia/sigma_no.png" alt="Sketch: σ highest at the centre"><figcaption data-i="fsn"><b>no</b>: σ is highest at the centre and decreases outwards</figcaption></figure>
+      <h3 data-i="h3v">V changes sign away from the centre</h3>
+      <figure><img src="guia/v_si.png" alt="Sketch: V also changes sign away from the centre"><figcaption data-i="fvy"><b>yes</b>: V changes sign again away from the centre, at about the same distance on both sides and with mirrored colours (here blue, red, blue, red from left to right)</figcaption></figure>
+      <figure><img src="guia/v_no.png" alt="Sketch: V changes sign only at the centre"><figcaption data-i="fvn"><b>no</b>: V changes sign only at the centre, as in a normal rotating disc</figcaption></figure>
+    </div>
+    <p class="note" data-i="note">These are sketches, not simulated maps. When to answer «unsure» is up to you. Each map has its own colour scale, so read the colour bar. Grey areas have no data.</p>
+  </details>
+
+  <div class="mapbar"><span id="pos"></span></div>
+  <div class="map" id="map" role="img" data-ia="map" aria-label="V map (left) and σ map (right)"></div>
+
+  <div class="q"><p data-i="qs">Is there a 2σ feature in the σ map?</p>
+    <div class="opts" data-q="s">
+      <button class="opt" id="s-si" data-val="si" aria-pressed="false" data-i="o_si">yes</button>
+      <button class="opt" id="s-dudoso" data-val="dudoso" aria-pressed="false" data-i="o_dudoso">unsure</button>
+      <button class="opt" id="s-no" data-val="no" aria-pressed="false" data-i="o_no">no</button>
+    </div></div>
+  <div class="q"><p data-i="qv">Does V change sign away from the centre?</p>
+    <div class="opts" data-q="v">
+      <button class="opt" id="v-si" data-val="si" aria-pressed="false" data-i="o_si">yes</button>
+      <button class="opt" id="v-dudoso" data-val="dudoso" aria-pressed="false" data-i="o_dudoso">unsure</button>
+      <button class="opt" id="v-no" data-val="no" aria-pressed="false" data-i="o_no">no</button>
+    </div></div>
+
+  <div class="nav">
+    <button class="btn" id="prev" data-i="prev">← previous</button>
+    <button class="btn" id="next" data-i="next">next →</button>
+  </div>
+
+  <div class="send">
+    <span class="msg" id="msg"></span>
+    <button class="btn" id="send" disabled data-i="send">Send answers</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+// Answers go to a Google Apps Script web app (URL in config.js) that appends them to a private Google Sheet; no sign-in for whoever answers.
+const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
+(function () {
+  const N = 850, PER = 10;
+  const CODES = Array.from({ length: N }, (_, i) => 'C' + String(i + 1).padStart(3, '0'));
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+  // Each person gets a short code (e.g. K7Q-4MX). Every answer is sent with it, so all answers of one person stay linked,
+  // also from another computer if they enter the same code. The code also sets that person's random order of the maps.
+  const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', CODE_RE = /^[A-HJ-NP-Z2-9]{3}-[A-HJ-NP-Z2-9]{3}$/;
+  const newCode = () => { const r = crypto.getRandomValues(new Uint32Array(6)); let c = ''; for (let i = 0; i < 6; i++) c += ABC[r[i] % ABC.length] + (i === 2 ? '-' : ''); return c; };
+  let rid = store.get('cielo_rid', null);
+  if (!CODE_RE.test(rid || '')) { rid = newCode(); store.set('cielo_rid', rid); }
+  function orderFor(code) {
+    let h = 2166136261; for (const ch of code) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    const rnd = () => { h = (h + 0x6D2B79F5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const o = Array.from({ length: N }, (_, i) => i);
+    for (let i = N - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    return o;
+  }
+  let order = orderFor(rid);
+  const codeAt = (i) => CODES[order[i]];
+
+  // Language: English first; Spanish on request (remembered in this browser).
+  const ES = {"yc": "Tu código:", "ych": "Tus respuestas quedan unidas a este código. Para seguir desde otro computador, ingrésalo allí.", "chg": "Ingresar un código", "use": "Usar este código", "badcode": "Ese código no es válido: son seis letras o números, como ABC-DEF.", "codeok": "Listo: tus próximas respuestas se enviarán con este código.", "nocfg": "La página todavía no está conectada a la planilla de respuestas. Tus respuestas siguen guardadas en este navegador.", "h1": "Mapas cinemáticos de CIELO", "l1": "Estos son mapas de la velocidad estelar media (V, izquierda) y de la dispersión de velocidades (σ, derecha) de galaxias de las simulaciones cosmológicas CIELO. Cada mapa es una observación simulada: la galaxia se ubica a z = 0.03 y se observa como lo haría un survey de espectroscopía de campo integral. Los mapas muestran galaxias observadas con distintas inclinaciones y con distintos instrumentos.", "l2": "En algunas galaxias, una parte de las estrellas rota en sentido contrario al resto. En los surveys, estas galaxias se suelen encontrar a ojo, por dos máximos de σ fuera del centro (una galaxia 2σ) o por un cambio de signo de V lejos del centro. Queremos medir qué tan bien funciona esto, así que te pedimos clasificar los mapas sin saber qué galaxia muestra cada uno.", "l3": "Clasifica los mapas que quieras; no hace falta terminarlos todos. Tus respuestas quedan guardadas en este navegador hasta que aprietes Enviar, y puedes volver después y enviar más.", "anon": "Enviar de forma anónima", "look": "Qué buscar", "h3s": "2σ en el mapa de σ", "h3v": "V cambia de signo lejos del centro", "fsy": "<b>sí</b>: dos máximos, uno a cada lado del centro, sobre el eje mayor (línea punteada)", "fsn": "<b>no</b>: σ es máxima en el centro y baja hacia afuera", "fvy": "<b>sí</b>: V vuelve a cambiar de signo lejos del centro, a más o menos la misma distancia a ambos lados y con los colores espejados (aquí azul, rojo, azul, rojo de izquierda a derecha)", "fvn": "<b>no</b>: V cambia de signo solo en el centro, como en un disco que rota normalmente", "note": "Son esquemas, no mapas simulados. Cuándo responder «no estoy seguro» queda a tu criterio. Cada mapa tiene su propia escala de color, así que mira la barra de color. Las zonas grises no tienen datos.", "qs": "¿Hay un 2σ en el mapa de σ?", "qv": "¿V cambia de signo lejos del centro?", "prev": "← anterior", "next": "siguiente →", "send": "Enviar respuestas", "o_si": "sí", "o_dudoso": "no estoy seguro", "o_no": "no", "name": "Tu nombre (opcional)", "map": "Mapa de V (izquierda) y de σ (derecha)", "pos": "Mapa {i} de {n}", "st_sent": "{n} enviadas", "st_pend": " · {p} sin enviar", "sending": "Enviando…", "ok": "Enviado. Llevas {n} respuestas enviadas; puedes seguir cuando quieras.", "err": "No se pudo enviar ahora (revisa tu conexión). Tus respuestas siguen guardadas en este navegador."};
+  const EN = {"badcode": "That code is not valid: it has six letters or numbers, like ABC-DEF.", "codeok": "Done: your next answers will be sent with this code.", "nocfg": "This page is not yet connected to the answer sheet. Your answers are still kept in this browser.", "pos": "Map {i} of {n}", "st_sent": "{n} sent", "st_pend": " · {p} not sent yet", "sending": "Sending…", "ok": "Sent. You have sent {n} answers in total; you can continue whenever you like.", "err": "Could not send right now (check your connection). Your answers are still kept in this browser."};
+  document.querySelectorAll('[data-i]').forEach((e) => { EN[e.dataset.i] = e.innerHTML; });
+  document.querySelectorAll('[data-ip]').forEach((e) => { EN[e.dataset.ip] = e.placeholder; });
+  document.querySelectorAll('[data-ia]').forEach((e) => { EN[e.dataset.ia] = e.getAttribute('aria-label'); });
+  let lang = 'en';
+  const T = (k, v) => ((lang === 'es' ? ES : EN)[k] || EN[k]).replace(/\{(\w)\}/g, (_, x) => v[x]);
+  function setLang(l) {
+    lang = l; const D = l === 'es' ? ES : EN;
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-i]').forEach((e) => { e.innerHTML = D[e.dataset.i]; });
+    document.querySelectorAll('[data-ip]').forEach((e) => { e.placeholder = D[e.dataset.ip]; });
+    document.querySelectorAll('[data-ia]').forEach((e) => { e.setAttribute('aria-label', D[e.dataset.ia]); });
+    $('lang-en').setAttribute('aria-pressed', String(l === 'en')); $('lang-es').setAttribute('aria-pressed', String(l === 'es'));
+    store.set('cielo_lang', l);
+  }
+  let sent = store.get('cielo_sent', {}), draft = store.get('cielo_draft', {}), idx = 0, busy = false;
+  $('rid').textContent = rid;
+  $('name').value = store.get('cielo_name', '');
+  $('anon').checked = store.get('cielo_anon', false);
+  $('name').disabled = $('anon').checked;
+
+  const ans = (c) => draft[c] || sent[c] || {};
+  const same = (a, b) => a && b && a.s === b.s && a.v === b.v;
+  const pending = () => Object.keys(draft).filter((c) => draft[c].s && draft[c].v && !same(draft[c], sent[c]));
+  const nSent = () => Object.keys(sent).length;
+
+  function status(t, warn) {
+    const p = pending().length, m = $('msg');
+    $('send').disabled = busy || p === 0;
+    m.classList.toggle('warn', !!warn);
+    m.textContent = t || (T('st_sent', {n: nSent()}) + (p ? T('st_pend', {p}) : ''));
+  }
+  function show(i) {
+    idx = (i + N) % N;
+    const c = codeAt(idx), st = Math.floor(order[idx] / PER), k = order[idx] % PER;
+    $('pos').textContent = T('pos', {i: idx + 1, n: N});
+    $('map').style.backgroundImage = 'url(s/' + String(st).padStart(2, '0') + '.jpg)';
+    $('map').style.backgroundPosition = '0 ' + (100 * k / (PER - 1)) + '%';
+    const a = ans(c);
+    for (const q of ['s', 'v']) for (const v of ['si', 'dudoso', 'no']) $(q + '-' + v).setAttribute('aria-pressed', String(a[q] === v));
+    new Image().src = 's/' + String(Math.floor(order[(idx + 1) % N] / PER)).padStart(2, '0') + '.jpg';
+    status();
+  }
+  function nextOpen() {
+    for (let k = 1; k <= N; k++) { const a = ans(codeAt((idx + k) % N)); if (!a.s || !a.v) { show((idx + k) % N); return; } }
+    show(idx + 1);
+  }
+  function answer(q, v) {
+    const c = codeAt(idx);
+    draft[c] = Object.assign({}, ans(c), { [q]: v });
+    store.set('cielo_draft', draft);
+    show(idx);
+    if (draft[c].s && draft[c].v && q === 'v') setTimeout(nextOpen, 200);
+  }
+  async function send() {
+    const p = pending(); if (!p.length || busy) return;
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(ENDPOINT)) { status(T('nocfg'), true); return; }
+    busy = true; status(T('sending'));
+    const name = $('anon').checked ? '' : $('name').value.trim().slice(0, 60);
+    const body = JSON.stringify({ rid, name, lang, answers: p.map((c) => [c, draft[c].s, draft[c].v]) });
+    try {
+      await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body });
+      for (const c of p) sent[c] = { s: draft[c].s, v: draft[c].v };
+      draft = {}; store.set('cielo_sent', sent); store.set('cielo_draft', draft);
+      busy = false; status(T('ok', {n: nSent()}));
+      $('send').disabled = true;
+    } catch (e) {
+      busy = false; status(T('err'), true);
+    }
+  }
+
+  document.querySelectorAll('.opts').forEach((g) => g.addEventListener('click', (e) => { const b = e.target.closest('.opt'); if (b) answer(g.dataset.q, b.dataset.val); }));
+  $('prev').addEventListener('click', () => show(idx - 1));
+  $('next').addEventListener('click', () => show(idx + 1));
+  $('send').addEventListener('click', send);
+  $('name').addEventListener('input', (e) => store.set('cielo_name', e.target.value));
+  $('anon').addEventListener('change', (e) => { store.set('cielo_anon', e.target.checked); $('name').disabled = e.target.checked; });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'ArrowRight') show(idx + 1); else if (e.key === 'ArrowLeft') show(idx - 1);
+  });
+  $('chg').addEventListener('click', () => { $('chgbox').hidden = !$('chgbox').hidden; if (!$('chgbox').hidden) $('newrid').focus(); });
+  $('setrid').addEventListener('click', () => {
+    let c = $('newrid').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    c = c.slice(0, 3) + '-' + c.slice(3, 6);
+    if (!CODE_RE.test(c)) { status(T('badcode'), true); return; }
+    if (c !== rid) { rid = c; store.set('cielo_rid', rid); order = orderFor(rid); sent = {}; store.set('cielo_sent', sent); }
+    $('rid').textContent = rid; $('chgbox').hidden = true; $('newrid').value = '';
+    idx = -1; nextOpen(); status(T('codeok'));
+  });
+  $('lang-en').addEventListener('click', () => { setLang('en'); show(idx); });
+  $('lang-es').addEventListener('click', () => { setLang('es'); show(idx); });
+  if (store.get('cielo_lang', 'en') === 'es') setLang('es');
+  idx = -1; nextOpen();
+})();
+</script>
+</body>
+</html>
