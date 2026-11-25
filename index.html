@@ -63,7 +63,7 @@ summary { cursor: pointer; font-style: italic; color: var(--muted); }
   <h1 data-i="h1">CIELO kinematic maps</h1>
   <p class="lede" data-i="l1">These are maps of the mean stellar velocity (V, left) and velocity dispersion (σ, right) of galaxies from the CIELO cosmological simulations. Each map is a mock observation: the galaxy is placed at z = 0.03 and observed as an integral field spectroscopy survey would observe it. The maps show galaxies observed at different inclinations and with different instruments.</p>
   <p class="lede" data-i="l2">In some galaxies, part of the stars rotate in the opposite direction to the rest. In surveys, these galaxies are often found by eye, from two off-centre peaks in σ (a 2σ galaxy) or from a change in the sign of V away from the centre. We want to measure how well this works, so we ask you to classify the maps without knowing which galaxy each one shows.</p>
-  <p class="lede" data-i="l3">Classify as many maps as you like; you do not need to finish them all. Your answers are kept in this browser until you press Send, and you can come back later and send more.</p>
+  <p class="lede" data-i="l3">Classify as many maps as you like; you do not need to finish them all. Maps that nobody has classified yet appear first. Your answers are kept in this browser until you press Send, and you can come back later and send more.</p>
 
   <div class="who">
     <input type="text" id="name" data-ip="name" placeholder="Your name (optional)" autocomplete="name" maxlength="60">
@@ -138,11 +138,24 @@ const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
     for (let i = N - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
     return o;
   }
-  let order = orderFor(rid);
+  let order = orderFor(rid), counts = null, touched = false;
+  // Maps answered by fewer people come first (nobody yet, then one person, ...); ties keep this person's random order.
+  function applyCounts() {
+    if (!counts) return;
+    const rank = new Array(N); order.forEach((m, i) => { rank[m] = i; });
+    const cur = order[idx];
+    order = Array.from({ length: N }, (_, i) => i).sort((a, b) => ((counts[CODES[a]] || 0) - (counts[CODES[b]] || 0)) || (rank[a] - rank[b]));
+    if (touched) { idx = order.indexOf(cur); show(idx); } else { idx = -1; nextOpen(); }
+  }
+  function loadCounts() {
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(ENDPOINT)) return;
+    const ctl = new AbortController(); setTimeout(() => ctl.abort(), 8000);
+    fetch(ENDPOINT, { signal: ctl.signal }).then((r) => r.json()).then((d) => { if (d && d.c) { counts = d.c; applyCounts(); } }).catch(() => {});
+  }
   const codeAt = (i) => CODES[order[i]];
 
   // Language: English first; Spanish on request (remembered in this browser).
-  const ES = {"yc": "Tu código:", "ych": "Tus respuestas quedan unidas a este código. Para seguir desde otro dispositivo, ingrésalo allí.", "chg": "Ingresar un código", "use": "Usar este código", "badcode": "Ese código no es válido: son seis letras o números, como ABC-DEF.", "codeok": "Listo: tus próximas respuestas se enviarán con este código.", "nocfg": "La página todavía no está conectada a la planilla de respuestas. Tus respuestas siguen guardadas en este navegador.", "h1": "Mapas cinemáticos de CIELO", "l1": "Estos son mapas de la velocidad estelar media (V, izquierda) y de la dispersión de velocidades (σ, derecha) de galaxias de las simulaciones cosmológicas CIELO. Cada mapa es una observación simulada: la galaxia se ubica a z = 0.03 y se observa como lo haría un survey de espectroscopía de campo integral. Los mapas muestran galaxias observadas con distintas inclinaciones y con distintos instrumentos.", "l2": "En algunas galaxias, una parte de las estrellas rota en sentido contrario al resto. En los surveys, estas galaxias se suelen encontrar a ojo, por dos máximos de σ fuera del centro (una galaxia 2σ) o por un cambio de signo de V lejos del centro. Queremos medir qué tan bien funciona esto, así que te pedimos clasificar los mapas sin saber qué galaxia muestra cada uno.", "l3": "Clasifica los mapas que quieras; no hace falta terminarlos todos. Tus respuestas quedan guardadas en este navegador hasta que aprietes Enviar, y puedes volver después y enviar más.", "anon": "Enviar de forma anónima", "look": "Qué buscar", "h3s": "2σ en el mapa de σ", "h3v": "V cambia de signo lejos del centro", "fsy": "<b>sí</b>: dos máximos, uno a cada lado del centro, sobre el eje mayor (línea punteada)", "fsn": "<b>no</b>: σ es máxima en el centro y baja hacia afuera", "fvy": "<b>sí</b>: V vuelve a cambiar de signo lejos del centro, a más o menos la misma distancia a ambos lados y con los colores espejados (aquí azul, rojo, azul, rojo de izquierda a derecha)", "fvn": "<b>no</b>: V cambia de signo solo en el centro, como en un disco que rota normalmente", "note": "Son esquemas, no mapas simulados. Cuándo responder «no estoy seguro» queda a tu criterio. Cada mapa tiene su propia escala de color, así que mira la barra de color. Las zonas grises no tienen datos.", "qs": "¿Hay un 2σ en el mapa de σ?", "qv": "¿V cambia de signo lejos del centro?", "prev": "← anterior", "next": "siguiente →", "send": "Enviar respuestas", "o_si": "sí", "o_dudoso": "no estoy seguro", "o_no": "no", "name": "Tu nombre (opcional)", "map": "Mapa de V (izquierda) y de σ (derecha)", "pos": "Mapa {i} de {n}", "st_sent": "Enviadas: {n}", "st_pend": " · {p} sin enviar", "sending": "Enviando…", "ok": "Enviado. Respuestas enviadas hasta ahora: {n}. Puedes seguir cuando quieras.", "err": "No se pudo enviar ahora (revisa tu conexión). Tus respuestas siguen guardadas en este navegador."};
+  const ES = {"yc": "Tu código:", "ych": "Tus respuestas quedan unidas a este código. Para seguir desde otro dispositivo, ingrésalo allí.", "chg": "Ingresar un código", "use": "Usar este código", "badcode": "Ese código no es válido: son seis letras o números, como ABC-DEF.", "codeok": "Listo: tus próximas respuestas se enviarán con este código.", "nocfg": "La página todavía no está conectada a la planilla de respuestas. Tus respuestas siguen guardadas en este navegador.", "h1": "Mapas cinemáticos de CIELO", "l1": "Estos son mapas de la velocidad estelar media (V, izquierda) y de la dispersión de velocidades (σ, derecha) de galaxias de las simulaciones cosmológicas CIELO. Cada mapa es una observación simulada: la galaxia se ubica a z = 0.03 y se observa como lo haría un survey de espectroscopía de campo integral. Los mapas muestran galaxias observadas con distintas inclinaciones y con distintos instrumentos.", "l2": "En algunas galaxias, una parte de las estrellas rota en sentido contrario al resto. En los surveys, estas galaxias se suelen encontrar a ojo, por dos máximos de σ fuera del centro (una galaxia 2σ) o por un cambio de signo de V lejos del centro. Queremos medir qué tan bien funciona esto, así que te pedimos clasificar los mapas sin saber qué galaxia muestra cada uno.", "l3": "Clasifica los mapas que quieras; no hace falta terminarlos todos. Primero aparecen los mapas que nadie ha clasificado todavía. Tus respuestas quedan guardadas en este navegador hasta que aprietes Enviar, y puedes volver después y enviar más.", "anon": "Enviar de forma anónima", "look": "Qué buscar", "h3s": "2σ en el mapa de σ", "h3v": "V cambia de signo lejos del centro", "fsy": "<b>sí</b>: dos máximos, uno a cada lado del centro, sobre el eje mayor (línea punteada)", "fsn": "<b>no</b>: σ es máxima en el centro y baja hacia afuera", "fvy": "<b>sí</b>: V vuelve a cambiar de signo lejos del centro, a más o menos la misma distancia a ambos lados y con los colores espejados (aquí azul, rojo, azul, rojo de izquierda a derecha)", "fvn": "<b>no</b>: V cambia de signo solo en el centro, como en un disco que rota normalmente", "note": "Son esquemas, no mapas simulados. Cuándo responder «no estoy seguro» queda a tu criterio. Cada mapa tiene su propia escala de color, así que mira la barra de color. Las zonas grises no tienen datos.", "qs": "¿Hay un 2σ en el mapa de σ?", "qv": "¿V cambia de signo lejos del centro?", "prev": "← anterior", "next": "siguiente →", "send": "Enviar respuestas", "o_si": "sí", "o_dudoso": "no estoy seguro", "o_no": "no", "name": "Tu nombre (opcional)", "map": "Mapa de V (izquierda) y de σ (derecha)", "pos": "Mapa {i} de {n}", "st_sent": "Enviadas: {n}", "st_pend": " · {p} sin enviar", "sending": "Enviando…", "ok": "Enviado. Respuestas enviadas hasta ahora: {n}. Puedes seguir cuando quieras.", "err": "No se pudo enviar ahora (revisa tu conexión). Tus respuestas siguen guardadas en este navegador."};
   const EN = {"badcode": "That code is not valid: it has six letters or numbers, like ABC-DEF.", "codeok": "Done: your next answers will be sent with this code.", "nocfg": "This page is not yet connected to the answer sheet. Your answers are still kept in this browser.", "pos": "Map {i} of {n}", "st_sent": "Sent: {n}", "st_pend": " · {p} not sent yet", "sending": "Sending…", "ok": "Sent. Answers sent so far: {n}. You can continue whenever you like.", "err": "Could not send right now (check your connection). Your answers are still kept in this browser."};
   document.querySelectorAll('[data-i]').forEach((e) => { EN[e.dataset.i] = e.innerHTML; });
   document.querySelectorAll('[data-ip]').forEach((e) => { EN[e.dataset.ip] = e.placeholder; });
@@ -191,6 +204,7 @@ const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
     show(idx + 1);
   }
   function answer(q, v) {
+    touched = true;
     const c = codeAt(idx);
     draft[c] = Object.assign({}, ans(c), { [q]: v });
     store.set('cielo_draft', draft);
@@ -206,7 +220,7 @@ const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
     try {
       await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body });
       for (const c of p) sent[c] = { s: draft[c].s, v: draft[c].v };
-      draft = {}; store.set('cielo_sent', sent); store.set('cielo_draft', draft);
+      draft = {}; store.set('cielo_sent', sent); store.set('cielo_draft', draft); loadCounts();
       busy = false; status(T('ok', {n: nSent()}));
       $('send').disabled = true;
     } catch (e) {
@@ -215,21 +229,21 @@ const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
   }
 
   document.querySelectorAll('.opts').forEach((g) => g.addEventListener('click', (e) => { const b = e.target.closest('.opt'); if (b) answer(g.dataset.q, b.dataset.val); }));
-  $('prev').addEventListener('click', () => show(idx - 1));
-  $('next').addEventListener('click', () => show(idx + 1));
+  $('prev').addEventListener('click', () => { touched = true; show(idx - 1); });
+  $('next').addEventListener('click', () => { touched = true; show(idx + 1); });
   $('send').addEventListener('click', send);
   $('name').addEventListener('input', (e) => store.set('cielo_name', e.target.value));
   $('anon').addEventListener('change', (e) => { store.set('cielo_anon', e.target.checked); $('name').disabled = e.target.checked; });
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === 'ArrowRight') show(idx + 1); else if (e.key === 'ArrowLeft') show(idx - 1);
+    if (e.key === 'ArrowRight') { touched = true; show(idx + 1); } else if (e.key === 'ArrowLeft') { touched = true; show(idx - 1); }
   });
   $('chg').addEventListener('click', () => { $('chgbox').hidden = !$('chgbox').hidden; if (!$('chgbox').hidden) $('newrid').focus(); });
   $('setrid').addEventListener('click', () => {
     let c = $('newrid').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     c = c.slice(0, 3) + '-' + c.slice(3, 6);
     if (!CODE_RE.test(c)) { status(T('badcode'), true); return; }
-    if (c !== rid) { rid = c; store.set('cielo_rid', rid); order = orderFor(rid); sent = {}; store.set('cielo_sent', sent); }
+    if (c !== rid) { rid = c; store.set('cielo_rid', rid); order = orderFor(rid); sent = {}; store.set('cielo_sent', sent); touched = false; if (counts) { applyCounts(); } }
     $('rid').textContent = rid; $('chgbox').hidden = true; $('newrid').value = '';
     idx = -1; nextOpen(); status(T('codeok'));
   });
@@ -237,6 +251,7 @@ const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
   $('lang-es').addEventListener('click', () => { setLang('es'); show(idx); });
   if (store.get('cielo_lang', 'en') === 'es') setLang('es');
   idx = -1; nextOpen();
+  loadCounts();
 })();
 </script>
 </body>
