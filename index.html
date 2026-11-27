@@ -125,7 +125,7 @@ body { font-size: 1rem; }
 // Answers go to a Google Apps Script web app (URL in config.js) that appends them to a private Google Sheet; no sign-in for whoever answers.
 const ENDPOINT = (window.CIELO_ENDPOINT || '').trim();
 (function () {
-  const N = 850, PER = 10;
+  const N = 880, PER = 10;
   const CODES = Array.from({ length: N }, (_, i) => 'C' + String(i + 1).padStart(3, '0'));
   const $ = (id) => document.getElementById(id);
   const store = {
